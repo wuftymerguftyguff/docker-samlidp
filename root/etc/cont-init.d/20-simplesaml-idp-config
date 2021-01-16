@@ -1,0 +1,78 @@
+#!/usr/bin/with-contenv bash
+
+exit 0
+
+#base setup
+cfgroot="/config"
+pkgname="simplesamlphp"
+
+function copy_default_files {
+local src="$1"
+local tgt="$2"
+for fyle in $(ls -1 $src)
+do
+	if [[ ! -f ${tgt}/${fyle} ]] 
+	then
+		echo cp ${src}/${fyle} ${tgt}/${fyle} 
+		cp ${src}/${fyle} ${tgt}/${fyle} 
+	else
+		echo ${tgt}/${fyle} exists skipping copy from ${src}/${fyle}
+	fi
+done
+}
+
+function replace_in_file {
+local cfgfile="$1"
+local pattern="$2"
+local newpattern="$3"
+if grep -q "$pattern" "$cfgfile"
+then
+ 	echo Found Pattern $pattern in file $cfgfile 
+	echo Changing $pattern to $newpattern in $cfgfile
+	perl -pi -e "s/$pattern/$newpattern/" $cfgfile
+fi
+}
+
+
+#create required folders
+folders="config"
+
+for folder in "$folders"
+do
+	tgtfolder="$cfgroot/$pkgname/$folder"
+	if [[ ! -d $tgtfolder ]]
+	then
+		echo $tgtfolder does not exist Creating.
+		mkdir -p "$tgtfolder"
+		
+	else
+		echo $tgtfolder exists, Skipping.
+	fi
+	unset tgtfolder
+done
+
+#Copy default config
+copy_default_files "/var/simplesamlphp/config" "/config/simplesamlphp/config"
+
+
+# Set non default admin password if required
+cfgfile="/config/simplesamlphp/config/config.php"
+pattern="'auth.adminpassword' => '123',"
+newpass=$(LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=12 count=1 2>/dev/null;echo)
+newpattern="'auth.adminpassword' => '$newpass',"
+replace_in_file "$cfgfile" "$pattern" "$newpattern"
+
+
+# Set non standard secret salt if required
+cfgfile="/config/simplesamlphp/config/config.php"
+pattern="'secretsalt' => 'defaultsecretsalt',"
+newsalt=$(LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo)
+newpattern="'secretsalt' => '$newsalt',"
+replace_in_file "$cfgfile" "$pattern" "$newpattern"
+
+
+# permissions
+chown -R abc:abc \
+	/config 
+chmod -R g+w \
+	/config/simplesamlphp
