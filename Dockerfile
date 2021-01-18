@@ -1,4 +1,4 @@
-FROM simplesamlphp
+FROM wuftymerguftyguff/simplesamlphp
 
 # add local files
 COPY root/ /
