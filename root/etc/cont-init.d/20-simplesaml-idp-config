@@ -46,11 +46,11 @@ fi
 
 # Create default server key for simplesaml if it does not exist
 SUBJECT="/C=GB/O=webscale/OU=devs/CN=*"
-if [[ -f $pkgcfgroot/cert/server.key && -f $pkgcfgroot/cert/server.crt ]]; then
+if [[ -f $pkgcfgroot/cert/server.pem && -f $pkgcfgroot/cert/server.crt ]]; then
 echo "using keys found in $pkgcfgroot/cert/"
 else
 echo "generating self-signed keys in $pkgcfgroot/cert/, you can replace these with your own keys if required"
-openssl req -newkey rsa:3072 -new -x509 -days 3652 -nodes -out $pkgcfgroot/cert/server.crt -keyout $pkgcfgroot/cert/server.key -subj "$SUBJECT" 
+openssl req -newkey rsa:3072 -new -x509 -days 3652 -nodes -out $pkgcfgroot/cert/server.crt -keyout $pkgcfgroot/cert/server.pem -subj "$SUBJECT" 
 fi
 
 # enable saml idp functions if required
