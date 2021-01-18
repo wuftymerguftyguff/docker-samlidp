@@ -4,5 +4,5 @@ FROM wuftymerguftyguff/simplesamlphp
 COPY root/ /
 
 # ports and volumes
-EXPOSE 1280 
+EXPOSE 80 443
 VOLUME /config
